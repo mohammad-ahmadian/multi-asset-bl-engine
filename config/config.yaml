@@ -1,0 +1,24 @@
+project:
+  name: "Multi-Asset Black-Litterman Allocation Engine"
+  author: "Mohammad Ahmadian"
+  github: "https://github.com/mohammad-ahmadian"
+
+universe:
+  tickers:
+    - SPY    # US Equities (S&P 500)
+    - VGK    # European Equities (FTSE Developed Europe)
+    - EEM    # Emerging Markets Equities (MSCI EM)
+    - TLT    # US Long-Term Treasury Bonds (20+ Year)
+    - IEF    # US Intermediate Treasury Bonds (7-10 Year)
+    - LQD    # US Investment Grade Corporate Credit
+    - HYG    # US High Yield Corporate Credit
+    - GLD    # Gold
+    - VNQ    # US Real Estate (REITs)
+    - BNDX   # International Total Bond Index
+
+parameters:
+  start_date: "2014-01-01"
+  end_date: "2026-08-20"
+  rebalance_frequency: "M"
+  base_currency: "USD"
+  risk_free_rate_ticker: "^IRX" # 13-Week Treasury Bill
