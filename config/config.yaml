@@ -1,24 +1,84 @@
 project:
   name: "Multi-Asset Black-Litterman Allocation Engine"
+  repository: "multi-asset-bl-engine"
   author: "Mohammad Ahmadian"
-  github: "https://github.com/mohammad-ahmadian"
+  github: "https://github.com/mohammad-ahmadian/multi-asset-bl-engine"
+  fund_name: "Global Multi-Asset Tactical Allocation Fund (UCITS)"
+
+fund_parameters:
+  base_currency: "USD"
+  initial_aum: 25000000.0  # $25 Million AUM
+  transaction_cost_bps: 10.0 # 10 bps per trade friction
+  risk_free_rate_ticker: "^IRX"
+  rebalance_frequency: "M"
 
 universe:
   tickers:
-    - SPY    # US Equities (S&P 500)
-    - VGK    # European Equities (FTSE Developed Europe)
-    - EEM    # Emerging Markets Equities (MSCI EM)
-    - TLT    # US Long-Term Treasury Bonds (20+ Year)
-    - IEF    # US Intermediate Treasury Bonds (7-10 Year)
-    - LQD    # US Investment Grade Corporate Credit
-    - HYG    # US High Yield Corporate Credit
-    - GLD    # Gold
-    - VNQ    # US Real Estate (REITs)
-    - BNDX   # International Total Bond Index
+    - SPY
+    - VGK
+    - EEM
+    - TLT
+    - IEF
+    - LQD
+    - HYG
+    - GLD
+    - VNQ
+    - BNDX
 
-parameters:
-  start_date: "2014-01-01"
-  end_date: "2026-08-20"
-  rebalance_frequency: "M"
-  base_currency: "USD"
-  risk_free_rate_ticker: "^IRX" # 13-Week Treasury Bill
+  asset_names:
+    SPY: "SPDR S&P 500 ETF Trust"
+    VGK: "Vanguard FTSE Europe ETF"
+    EEM: "iShares MSCI Emerging Markets ETF"
+    TLT: "iShares 20+ Year Treasury Bond ETF"
+    IEF: "iShares 7-10 Year Treasury Bond ETF"
+    LQD: "iShares iBoxx $ Inv Grade Corporate Bond ETF"
+    HYG: "iShares iBoxx $ High Yield Corporate Bond ETF"
+    GLD: "SPDR Gold Shares"
+    VNQ: "Vanguard Real Estate ETF"
+    BNDX: "Vanguard Total International Bond ETF"
+
+  asset_classes:
+    SPY: "Equity"
+    VGK: "Equity"
+    EEM: "Equity"
+    TLT: "Fixed Income"
+    IEF: "Fixed Income"
+    LQD: "Fixed Income"
+    HYG: "Fixed Income"
+    BNDX: "Fixed Income"
+    GLD: "Commodity"
+    VNQ: "Real Estate"
+
+model_parameters:
+  lookback_days: 756        # 3-Year Rolling Calibration Window
+  black_litterman_tau: 0.05 # Prior uncertainty scale
+
+tactical_views:
+  - view_type: "RELATIVE"
+    asset_long: "VGK"
+    asset_short: "SPY"
+    expected_outperformance: 0.015 # +1.50%
+    confidence: 0.65               # 65% Confidence
+
+  - view_type: "ABSOLUTE"
+    asset_long: "GLD"
+    expected_outperformance: 0.090 # +9.00%
+    confidence: 0.75               # 75% Confidence
+
+mandate_constraints:
+  min_weight: 0.0
+  max_weight: 0.35
+  max_tracking_error: 0.035 # 3.50% Active Risk Budget
+  
+  custom_asset_bounds:
+    SPY: [0.10, 0.35]
+    VGK: [0.05, 0.25]
+    EEM: [0.00, 0.10]
+    GLD: [0.00, 0.10]
+    VNQ: [0.00, 0.08]
+
+  asset_class_bounds:
+    Equity: [0.35, 0.60]
+    Fixed Income: [0.30, 0.55]
+    Commodity: [0.00, 0.10]
+    Real Estate: [0.00, 0.08]
