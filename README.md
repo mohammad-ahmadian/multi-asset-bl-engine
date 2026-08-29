@@ -7,10 +7,6 @@
 [![Excel](https://img.shields.io/badge/Excel-openpyxl%20Automation-217346?style=flat&logo=microsoftexcel&logoColor=white)](reports/)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)](LICENSE)
 
-**Author:** Mohammad Ahmadian  
-**Target Role:** Portfolio Analyst / Quantitative Asset Allocation Analyst  
-**GitHub Repository:** [https://github.com/mohammad-ahmadian/multi-asset-bl-engine](https://github.com/mohammad-ahmadian/multi-asset-bl-engine)
-
 ---
 
 > 🇩🇪 **[Zur deutschen Version springen](#-deutsch-projektübersicht)** | 🇬🇧 **[Jump to English Version](#-english-project-overview)**
