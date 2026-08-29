@@ -90,6 +90,8 @@ $$
 Wobei $\Sigma = L L^T$ der Cholesky-Faktor der regularisierten Kovarianzmatrix ist.
 
 ### 5. Cornish-Fisher-Expansion (Modifizierter VaR)
+
+$$
 \tilde{z}_\alpha = z_\alpha + \frac{1}{6}(z_\alpha^2 - 1)S + \frac{1}{24}(z_\alpha^3 - 3z_\alpha)K - \frac{1}{36}(2z_\alpha^3 - 5z_\alpha)S^2
 $$
 
