@@ -25,22 +25,6 @@ Ein quantitatives, produktionsreifes System zur strategischen und taktischen Por
 
 Die Engine überwindet die klassische Markowitz-Fehlermaximierung durch die Integration von **Ledoit-Wolf Kovarianz-Shrinkage**, **CAPM-impliziten Gleichgewichtsrenditen (Reverse Optimization)** und dem **Bayesianischen Black-Litterman Modell** mit Idzorek-Konfidenzskalierung. Das System bildet den gesamten Lebenszyklus institutioneller Portfoliokonstruktion ab: von der automatisierten Marktdaten-Pipeline in **PostgreSQL**, über konvexe **Second-Order Cone Optimization (SOCP)** in Python (`CVXPY`), bis hin zu rollierenden Out-of-Sample Walk-Forward-Backtests, nicht-normalem Tail-Risk-Stresstesting und automatisierter **Excel-Order-Sheet-Generierung (`openpyxl`)** für das Fondsmanagement.
 
-┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ SYSTEMARCHITEKTUR & DATENFLUSS │
-├───────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ │
-│ [ PostgreSQL Daten-Layer ] │
-│ • daily_prices (12+ Jahre OHLCV) ──► DataLoader ──► Ledoit-Wolf Kovarianz-Shrinkage (Σ) │
-│ • benchmark_weights ──────────────────────────────► CAPM-Gleichgewichts-Prior (Π = δ Σ w_mkt) │
-│ │
-│ [ Bayesianischer Kern ] │
-│ • Taktische Views (P, Q) ──► Idzorek-Kalibrierung (Ω) ──► Posterior-Verteilung [ E[R], Σ_post ] │
-│ │
-│ [ Optimierung & Execution ] │
-│ • CVXPY SOCP-Solver (CLARABEL) ──► OGAW/UCITS Restriktionen ──► 9.5J Walk-Forward Backtesting │
-│ • RiskEngine (Cornish-Fisher VaR & CVaR) ───────────────────► Institutionelles Excel Order Sheet │
-│ │
-└───────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
 
 ### Hauptmerkmale
@@ -71,6 +55,65 @@ Die Engine überwindet die klassische Markowitz-Fehlermaximierung durch die Inte
 * **Mathematik & Optimierung**: `NumPy`, `Pandas`, `SciPy`, `Scikit-Learn`, `CVXPY` (Solver: `CLARABEL`)
 * **Testing**: `Pytest` (100% mathematische Testabdeckung)
 * **Reporting & Visualisierung**: `openpyxl`, `Matplotlib`, `Seaborn`
+
+---
+
+## ▶ Quantitative Formulierung & Methodik
+
+### 1. Ledoit-Wolf-Kovarianzregularisierung
+$$\Sigma_{LW} = \hat{\delta} F + (1 - \hat{\delta}) S, \quad \hat{\delta} \in [0, 1]$$
+Wobei $S$ die Stichproben-Kovarianzmatrix und $F$ das strukturierte Shrinkage-Ziel mit konstanter Korrelation ist.
+
+### 2. Markt-impliziter Gleichgewichtsprior (Reverse Optimization)
+$$\Pi = \delta \Sigma_{LW} w_{mkt}, \quad \text{wobei } \delta = \frac{E[R_{mkt}] - R_f}{\sigma_{mkt}^2}$$
+
+### 3. Black-Litterman Master-Posterior-Gleichungen
+Mit den taktischen Ansichten der Investoren ausgedrückt als $P \cdot r = Q + \varepsilon$, wobei $\varepsilon \sim \mathcal{N}(0, \Omega)$, und $\Omega$ über Idzoreks Konfidenzmethode kalibriert ist:
+$$\Omega = \operatorname{diag}\left( P (\tau \Sigma) P^T \right) \odot \left( \frac{1 - c}{c} \right)$$
+$$E[R] = \Pi + \tau \Sigma P^T \left[ P (\tau \Sigma) P^T + \Omega \right]^{-1} \left( Q - P \Pi \right)$$
+$$\Sigma_{post} = \Sigma + \tau \Sigma - \tau \Sigma P^T \left[ P (\tau \Sigma) P^T + \Omega \right]^{-1} P (\tau \Sigma)$$
+
+### 4. Institutionelle UCITS-Kegeloptimierung zweiter Ordnung (SOCP)
+$$\max_{w} \quad w^T E[R] - \frac{\delta}{2} w^T \Sigma_{post} w$$
+$$\text{s.t.} \quad \sum_{i=1}^N w_i = 1.0, \quad 0 \le w_i \le 0.35, \quad L_c \le \sum_{i \in c} w_i \le U_c, \quad \| L^T (w - w_b) \|_2 \le \text{TE}_{max}$$
+Wobei $\Sigma = L L^T$ der Cholesky-Faktor der Kovarianzmatrix ist.
+
+### 5. Cornish-Fisher-Expansion (Modifizierter VaR)
+$$\tilde{z}_\alpha = z_\alpha + \frac{1}{6}(z_\alpha^2 - 1)S + \frac{1}{24}(z_\alpha^3 - 3z_\alpha)K - \frac{1}{36}(2z_\alpha^3 - 5z_\alpha)S^2$$
+$$\text{VaR}_\alpha^{CF} = - \left( \mu_p + \tilde{z}_\alpha \sigma_p \right), \quad \text{CVaR}_\alpha = - \mathbb{E}[R_p \mid R_p \le -\text{VaR}_\alpha]$$
+
+---
+
+## ▶ Visuelle Analysen & Performance-Galerie
+
+### 1. Kumulative Vermögensentwicklung & Underwater-Drawdown-Profil
+Walk-Forward Out-of-Sample Backtest-Vergleich (2017–2026), der ein überlegenes risikoadjustiertes Alpha und eine reduzierte Drawdown-Tiefe demonstriert:
+![Kumulative Renditen & Drawdowns](docs/figures/cumulative_returns.png)
+
+### 2. Verschiebung der Effizienzgrenze durch taktische Black-Litterman-Ansichten
+Demonstration der Bayes'schen Verschiebung des Risiko-Rendite-Möglichkeitsraums nach Einbeziehung taktischer Ansichten:
+![Verschiebung der Effizienzgrenze](docs/figures/efficient_frontier.png)
+
+### 3. Dynamischer Drift der systematischen Asset Allocation
+Gestapelte Flächendiagramm-Aufschlüsselung der aktiven Anlageklassen-Gewichtungen, die im Laufe der monatlichen Rebalancing-Zeitpunkte driften:
+![Drift der Asset Allocation](docs/figures/asset_allocation_drift.png)
+
+### 4. Kapitalerhalt bei historischen Krisen-Stresstests
+Gruppierte Schockauswirkungsanalyse zur Überprüfung des Kapitalerhalts während schwerer historischer Marktverwerfungen:
+![Vergleich von Krisen-Stresstests](docs/figures/stress_test_comparison.png)
+
+---
+
+## ▶ Empirische Out-of-Sample-Ergebnisse (2017–2026)
+
+Walk-Forward Backtest-Ergebnisse über einen 9,5-jährigen Out-of-Sample-Zeitraum (monatliches Rebalancing, 10 Bp Transaktionskosten):
+
+| Strategie | CAGR | Volatilität | Sharpe ($R_f$) | Sortino | Max. Drawdown | Information Ratio | Capture Ratio |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Global Benchmark (Marktkapitalisiert)** | 8,12% | 12,10% | 0,35 | 0,48 | -23,85% | 0,00 | 1,00 |
+| **Gleichgewichtung ($1/N$)** | 6,85% | 11,40% | 0,26 | 0,36 | -22,10% | -0,33 | 0,92 |
+| **Restringierte Historische MVO** | 7,30% | 13,50% | 0,25 | 0,34 | -27,40% | -0,18 | 0,88 |
+| **Dynamisches Restringiertes Black-Litterman** | **9,45%** | **11,85%** | **0,47** | **0,66** | **-19,65%** | **+0,50** | **1,18** |
 
 ---
 
@@ -113,7 +156,7 @@ The engine eliminates Markowitz mean-variance error-maximization by integrating 
 
 ---
 
-## 📐 Quantitative Formulations & Methodology
+## ▶ Quantitative Formulations & Methodology
 
 ### 1. Ledoit-Wolf Covariance Regularization
 $$\Sigma_{LW} = \hat{\delta} F + (1 - \hat{\delta}) S, \quad \hat{\delta} \in [0, 1]$$
@@ -139,7 +182,7 @@ $$\text{VaR}_\alpha^{CF} = - \left( \mu_p + \tilde{z}_\alpha \sigma_p \right), \
 
 ---
 
-## 📊 Visual Analytics & Performance Gallery
+## ▶ Visual Analytics & Performance Gallery
 
 ### 1. Cumulative Wealth Evolution & Underwater Drawdown Profile
 Walk-forward out-of-sample backtest comparison (2017–2026) showcasing superior risk-adjusted alpha and drawdown reduction:
@@ -159,7 +202,7 @@ Grouped shock impact analysis verifying capital preservation during severe histo
 
 ---
 
-## 📈 Out-of-Sample Empirical Results (2017–2026)
+## ▶ Out-of-Sample Empirical Results (2017–2026)
 
 Walk-forward backtest results over a 9.5-year out-of-sample period (monthly rebalancing, 10 bps friction):
 
