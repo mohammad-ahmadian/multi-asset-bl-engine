@@ -65,18 +65,37 @@ $$\Pi = \delta \Sigma_{LW} w_{mkt}, \quad \text{wobei } \delta = \frac{E[R_{mkt}
 
 ### 3. Black-Litterman Master-Posterior-Gleichungen
 Mit den taktischen Ansichten der Investoren ausgedrückt als $P \cdot r = Q + \varepsilon$, wobei $\varepsilon \sim \mathcal{N}(0, \Omega)$, und $\Omega$ über Idzoreks Konfidenzmethode kalibriert ist:
-$$\Omega = \operatorname{diag}\left( P (\tau \Sigma) P^T \right) \odot \left( \frac{1 - c}{c} \right)$$
-$$E[R] = \Pi + \tau \Sigma P^T \left[ P (\tau \Sigma) P^T + \Omega \right]^{-1} \left( Q - P \Pi \right)$$
-$$\Sigma_{post} = \Sigma + \tau \Sigma - \tau \Sigma P^T \left[ P (\tau \Sigma) P^T + \Omega \right]^{-1} P (\tau \Sigma)$$
+
+$$
+\Omega = \text{diag}\left( P (\tau \Sigma) P^T \right) \odot \left( \frac{1 - c}{c} \right)
+$$
+
+$$
+E[R] = \Pi + \tau \Sigma P^T \left[ P (\tau \Sigma) P^T + \Omega \right]^{-1} \left( Q - P \Pi \right)
+$$
+
+$$
+\Sigma_{post} = \Sigma + \tau \Sigma - \tau \Sigma P^T \left[ P (\tau \Sigma) P^T + \Omega \right]^{-1} P (\tau \Sigma)
+$$
 
 ### 4. Institutionelle UCITS-Kegeloptimierung zweiter Ordnung (SOCP)
-$$\max_{w} \quad w^T E[R] - \frac{\delta}{2} w^T \Sigma_{post} w$$
-$$\text{s.t.} \quad \sum_{i=1}^N w_i = 1.0, \quad 0 \le w_i \le 0.35, \quad L_c \le \sum_{i \in c} w_i \le U_c, \quad \| L^T (w - w_b) \|_2 \le \text{TE}_{max}$$
-Wobei $\Sigma = L L^T$ der Cholesky-Faktor der Kovarianzmatrix ist.
+$$
+\max_{w} \quad w^T E[R] - \frac{\delta}{2} w^T \Sigma_{post} w
+$$
+
+$$
+\text{unter den Nebenbedingungen:} \quad \sum_{i=1}^N w_i = 1.0, \quad 0 \le w_i \le 0.35, \quad L_c \le \sum_{i \in c} w_i \le U_c, \quad \| L^T (w - w_b) \|_2 \le \text{TE}_{\text{max}}
+$$
+
+Wobei $\Sigma = L L^T$ der Cholesky-Faktor der regularisierten Kovarianzmatrix ist.
 
 ### 5. Cornish-Fisher-Expansion (Modifizierter VaR)
-$$\tilde{z}_\alpha = z_\alpha + \frac{1}{6}(z_\alpha^2 - 1)S + \frac{1}{24}(z_\alpha^3 - 3z_\alpha)K - \frac{1}{36}(2z_\alpha^3 - 5z_\alpha)S^2$$
-$$\text{VaR}_\alpha^{CF} = - \left( \mu_p + \tilde{z}_\alpha \sigma_p \right), \quad \text{CVaR}_\alpha = - \mathbb{E}[R_p \mid R_p \le -\text{VaR}_\alpha]$$
+\tilde{z}_\alpha = z_\alpha + \frac{1}{6}(z_\alpha^2 - 1)S + \frac{1}{24}(z_\alpha^3 - 3z_\alpha)K - \frac{1}{36}(2z_\alpha^3 - 5z_\alpha)S^2
+$$
+
+$$
+\text{VaR}_\alpha^{CF} = - \left( \mu_p + \tilde{z}_\alpha \sigma_p \right), \quad \text{CVaR}_\alpha = - \mathbb{E}[R_p \mid R_p \le -\text{VaR}_\alpha]
+$$
 
 ---
 
@@ -163,14 +182,22 @@ $$\Pi = \delta \Sigma_{LW} w_{mkt}, \quad \text{where } \delta = \frac{E[R_{mkt}
 
 ### 3. Black-Litterman Master Posterior Equations
 With investor tactical views expressed as $P \cdot r = Q + \varepsilon$, where $\varepsilon \sim \mathcal{N}(0, \Omega)$, and $\Omega$ calibrated via Idzorek's confidence method:
-$$\Omega = \operatorname{diag}\left( P (\tau \Sigma) P^T \right) \odot \left( \frac{1 - c}{c} \right)$$
+$$
+\Omega = \text{diag}\left( P (\tau \Sigma) P^T \right) \odot \left( \frac{1 - c}{c} \right)
+$$
 $$E[R] = \Pi + \tau \Sigma P^T \left[ P (\tau \Sigma) P^T + \Omega \right]^{-1} \left( Q - P \Pi \right)$$
 $$\Sigma_{post} = \Sigma + \tau \Sigma - \tau \Sigma P^T \left[ P (\tau \Sigma) P^T + \Omega \right]^{-1} P (\tau \Sigma)$$
 
 ### 4. Institutional UCITS Second-Order Cone Optimization (SOCP)
-$$\max_{w} \quad w^T E[R] - \frac{\delta}{2} w^T \Sigma_{post} w$$
-$$\text{s.t.} \quad \sum_{i=1}^N w_i = 1.0, \quad 0 \le w_i \le 0.35, \quad L_c \le \sum_{i \in c} w_i \le U_c, \quad \| L^T (w - w_b) \|_2 \le \text{TE}_{max}$$
-Where $\Sigma = L L^T$ is the Cholesky factor of the covariance matrix.
+$$
+\max_{w} \quad w^T E[R] - \frac{\delta}{2} w^T \Sigma_{post} w
+$$
+
+$$
+\text{subject to:} \quad \sum_{i=1}^N w_i = 1.0, \quad 0 \le w_i \le 0.35, \quad L_c \le \sum_{i \in c} w_i \le U_c, \quad \| L^T (w - w_b) \|_2 \le \text{TE}_{\text{max}}
+$$
+
+Where $\Sigma = L L^T$ is the Cholesky factor of the regularized covariance matrix.
 
 ### 5. Cornish-Fisher Expansion (Modified VaR)
 $$\tilde{z}_\alpha = z_\alpha + \frac{1}{6}(z_\alpha^2 - 1)S + \frac{1}{24}(z_\alpha^3 - 3z_\alpha)K - \frac{1}{36}(2z_\alpha^3 - 5z_\alpha)S^2$$
